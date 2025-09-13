@@ -30,10 +30,10 @@ def load_emails():
     debug(f"Gefundene E-Mail-Adressen: {emails}")
     return emails
 
-def send_mail(smtp_server, smtp_port, smtp_user, smtp_password, subject, to_addr, message):
+def send_mail(smtp_server, smtp_port, smtp_user, smtp_password, from_address, subject, to_addr, message):
     debug(f"Sende E-Mail an {to_addr}")
     msg = MIMEMultipart()
-    msg['From'] = smtp_user
+    msg['From'] = from_address
     msg['To'] = to_addr
     msg['Subject'] = subject
     msg.attach(MIMEText(message, 'plain', 'utf-8'))
@@ -41,7 +41,7 @@ def send_mail(smtp_server, smtp_port, smtp_user, smtp_password, subject, to_addr
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, to_addr, msg.as_string())
+            server.sendmail(from_address, to_addr, msg.as_string())
         debug(f"E-Mail erfolgreich an {to_addr} gesendet.")
     except Exception as e:
         debug(f"Fehler beim Senden an {to_addr}: {e}")
@@ -56,6 +56,7 @@ def main():
             config['smtp_port'],
             config['smtp_user'],
             config['smtp_password'],
+            config.get('from_address', config['smtp_user']),
             config['subject'],
             email,
             message
